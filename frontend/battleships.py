@@ -7,22 +7,32 @@ from client import Client
 import plane
 from gamebutton import GameButton
 
+from message import BaseMessage, PlayerConnectedMesage, SankMessage, HitMessage, MissMessage
+
+
+
 class Battleships(GridLayout):
-    
     
 
     def __init__(self, **kwargs):
         super(Battleships, self).__init__(**kwargs)
         self.isGameStarted = False
-        self.client = Client()
+        self.client = Client(self.onMessage)
         self.ids['opponent'].disabled = True
-        
+        self.lastX = 0
+        self.lastY = 0
+
         for c1 in self.children:
             for c2 in c1.children:
                 for c3 in c2.children:
                     for c4 in c3.children:
                         if isinstance(c4, GameButton):
                             c4.sendMessage = self.sendMessage
+                            c4.saveLastHitPosition = self.saveLastHitPosition
+
+    def saveLastHitPosition(self, x, y):
+        self.lastX = x
+        self.lastY = y
 
 
     def StartButtonClick(self):
@@ -33,21 +43,31 @@ class Battleships(GridLayout):
         self.ids['opponent'].disabled = False
         print('Start Button Clik was click :)')
         self.isGameStarted = True
+        self.sendMessage(PlayerConnectedMesage())
 
         # C:\Users\lunavis\Desktop\PyBattleShips2\battleships.py
         
-    def onMessage(self, message):
+    def onMessage(self, message: BaseMessage):
         # odbiera wiadomość
-        x = int(message['x'])
-        y = int(message['y'])
-        self.ids['player'].ids[str(y)].ids[str(x)].setWasHit()
+        if message.type == BaseMessage.ATTACK:
+            x = message.x
+            y = message.y
+            self.ids['player'].ids[str(y)].ids[str(x)].setWasHit()
 
-        if self.isShip(x, y) and self.isSunken(x, y, {}):
-            self.sank(x, y, {})
-        elif self.isShip(x, y):
-            self.ids['opponent'].ids[str(y)].ids[str(x)].hit()
-        else:
-            self.ids['opponent'].ids[str(y)].ids[str(x)].miss()
+            if self.isShip(x, y) and self.isSunken(x, y, {}):
+                self.sank(x, y, {}, 'player')
+                self.sendMessage(SankMessage())
+            elif self.isShip(x, y):
+                self.sendMessage(HitMessage())
+            else:
+                self.sendMessage(MissMessage())
+        elif message.type == BaseMessage.SANK:
+            self.sank(self.lastX, self.lastY, {}, 'opponent')
+        elif message.type == BaseMessage.HIT:
+            self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].hit()
+        elif message.type == BaseMessage.MISS:
+            self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].miss()
+
     
     def sendMessage(self, message):
         # wysyła wiadomość
@@ -86,7 +106,7 @@ class Battleships(GridLayout):
 
         return True
 
-    def sank(self, x, y, visited):
+    def sank(self, x, y, visited, tag = "opponent"):
         if (x, y) not in visited:
             visited[(x, y)] = True
             for i in range(y - 1, y + 2):
@@ -95,10 +115,10 @@ class Battleships(GridLayout):
                 for j in range(x - 1, x + 2):
                     if j == 0 or j == 11:
                         continue
-                    self.ids['player'].ids[str(y)].ids[str(x)].setWasHit()
-                    self.ids['opponent'].ids[str(y)].ids[str(x)].setWasHit()
-                    if self.ids['opponent'].ids[str(y)].ids[str(x)].isShip:
-                        self.sank(j, i, visited)
+                    self.ids[tag].ids[str(y)].ids[str(x)].setWasHit()
+                    if self.ids[tag].ids[str(y)].ids[str(x)].isShip:
+                        self.ids[tag].ids[str(y)].ids[str(x)].sank()
+                        self.sank(j, i, visited, tag)
 
 
 class BattleshipsApp(App):

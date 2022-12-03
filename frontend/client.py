@@ -1,15 +1,17 @@
 
 import asyncio
+import json
 import websockets
 
-from message import PlayerDisconnectedMesage
+from message import BaseMessage, PlayerDisconnectedMesage
 
 
 class Client:
 
-    def __init__(self) -> None:
+    def __init__(self, onMessage):
         self._stop = False
         self.messages = []
+        self.onMessage = onMessage
 
     async def run(self):
         while not self._stop:
@@ -31,8 +33,10 @@ class Client:
             
 
     async def receive(self, websocket):
-        message = await websocket.recv()
-        print("Received: ", message)
+        while not self._stop:
+            message = await websocket.recv()
+            print("Received: ", message)
+            self.onMessage(BaseMessage(data=json.loads(message)))
 
 
     def stop(self):
