@@ -9,15 +9,11 @@ from game import Game
 
 class Server:
 
-    clients = {}
     games = {} # Id, obiekt gry
     websocketToGame = {} # websocket, ID Gry
 
     gameKays = ['A', 'B', 'C']
 
-
-    def __init__(self):
-        self.clients = {}
 
     async def echo(self, websocket, path):
         try:
@@ -33,11 +29,16 @@ class Server:
                         self.games[self.websocketToGame[websocket]].add_player(websocket)
                 
                 game = self.games[self.websocketToGame[websocket]]
-                if len(game.players) == 2:
-                    await game.handle(websocket, message)
+                await game.handle(websocket, message)
 
-        except RuntimeError:
-            print("Error")
+        except websockets.exceptions.ConnectionClosed:
+            game = self.games[self.websocketToGame[websocket]]
+            try:
+                await game.handleDisconnect(websocket)
+            except:
+                print("Trudno")
+            self.websocketToGame.pop(websocket)
+            
 
 
 s = Server()
