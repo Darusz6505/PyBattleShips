@@ -1,7 +1,10 @@
 import asyncio
+import sys
 import time
 
 import websockets
+
+message = sys.argv[1]
 
 
 async def hello():
@@ -10,8 +13,8 @@ async def hello():
     async with websockets.connect(uri) as websocekt:
         while True:
             now = time.strftime("%X")
-            print("Sending: ", now)
-            await websocekt.send(now)
+            print("Sending: ", now, message)
+            await websocekt.send(message)
             msg = await websocekt.recv()
             print("Received: ", msg)
             await asyncio.sleep(1)

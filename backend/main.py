@@ -1,12 +1,20 @@
+import math
 import time
 import asyncio
 
 import websockets
 
+from game import Game
+
 
 class Server:
 
     clients = {}
+    games = {} # Id, obiekt gry
+    websocketToGame = {} # websocket, ID Gry
+
+    gameKays = ['A', 'B', 'C']
+
 
     def __init__(self):
         self.clients = {}
@@ -14,14 +22,19 @@ class Server:
     async def echo(self, websocket, path):
         try:
             async for message in websocket:
-                if websocket not in self.clients:
-                    self.clients[websocket] = True
+                if websocket not in self.websocketToGame:
+                    self.websocketToGame[websocket] = self.gameKays[math.floor(len(self.websocketToGame) / 2)]
+                    if self.websocketToGame[websocket] in self.games:
+                        print("Adding player to game", self.websocketToGame[websocket])
+                        self.games[self.websocketToGame[websocket]].add_player(websocket)
+                    else:
+                        print("Creating game", self.websocketToGame[websocket])
+                        self.games[self.websocketToGame[websocket]] = Game()
+                        self.games[self.websocketToGame[websocket]].add_player(websocket)
                 
-                for key in self.clients:
-                    if key == websocket:
-                        continue
-                    await key.send(message)
-
+                game = self.games[self.websocketToGame[websocket]]
+                if len(game.players) == 2:
+                    await game.handle(websocket, message)
 
         except RuntimeError:
             print("Error")
