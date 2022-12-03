@@ -1,10 +1,17 @@
 import asyncio
+import json
 import sys
 import time
 
 import websockets
 
-message = sys.argv[1]
+from message import AttackMessage, BaseMessage
+
+# message = sys.argv[1]
+message = AttackMessage(x=sys.argv[1], y=sys.argv[2])
+
+def handleAttack(msg : AttackMessage):
+    print("I've been hit ", msg.x, msg.y)
 
 
 async def hello():
@@ -14,15 +21,20 @@ async def hello():
         try:
             while True:
                 now = time.strftime("%X")
-                print("Sending: ", now, message)
-                await websocekt.send(message)
+                print("Sending: ", now, message.toJSON())
+                await websocekt.send(message.toJSON())
                 msg = await websocekt.recv()
                 print("Received: ", msg)
                 # rozłączenie się partnera z gry
-                if msg == "Disconnect":
-                    print(msg)
+                msg = BaseMessage(data=json.loads(msg))
+                if msg.type == BaseMessage.PLAYER_DISCONNECTED:
+                    print(BaseMessage.PLAYER_DISCONNECTED)
                     await websocekt.close()
                     break
+                elif msg.type == BaseMessage.ATTACK:
+                    handleAttack(msg)
+
+
         except websockets.excpetions.connectionClosed as ex:
             print(ex)
 
