@@ -6,11 +6,21 @@ import websockets
 
 class Server:
 
+    clients = {}
+
+    def __init__(self):
+        self.clients = {}
+
     async def echo(self, websocket, path):
         try:
             async for message in websocket:
-                print(message)
-                await websocket.send(message)
+                if websocket not in self.clients:
+                    self.clients[websocket] = True
+                
+                for key in self.clients:
+                    if key == websocket:
+                        continue
+                    await key.send(message)
 
 
         except RuntimeError:
