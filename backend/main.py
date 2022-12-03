@@ -8,7 +8,7 @@ from game import Game
 
 
 class Server:
-    clearInterval =  15
+    clearInterval =  60
 
     games = {} # Id, obiekt gry
     websocketToGame = {} # websocket, ID Gry

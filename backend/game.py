@@ -1,6 +1,8 @@
 
 import asyncio
+import json
 import time
+from message import BaseMessage
 
 from message import PlayerDisconnectedMesage
 
@@ -19,19 +21,26 @@ class Game:
     async def handle(self, websocket, message):
         self.lastActivity = time.time()
         if len(self.players) == 2:
-            await self.sendToOther(websocket, message)
+            message = BaseMessage(data=json.loads(message))
+            if message.type == BaseMessage.PLAYER_DISCONNECTED:
+                await self.sendBoth(message.toJSON())
+            else:
+                await self.sendToOther(websocket, message.toJSON())
 
 
     async def timeout(self):
         for player in self.players:
             await player.send("Timeout")
 
+    async def sendBoth(self, message):
+        for player in self.players:
+            await player.send(message)
 
     async def sendToOther(self, websocket, message):
         for player in self.players:
             if player == websocket:
                 continue
-            await asyncio.sleep(0.5)
+            # await asyncio.sleep(0.5)
             await player.send(message)
 
     async def handleDisconnect(self, websocket):

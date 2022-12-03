@@ -1,3 +1,4 @@
+from message import AttackMessage
 from kivy.properties import BooleanProperty, DictProperty, ObjectProperty
 from kivy.uix.button import Button
 
@@ -13,7 +14,7 @@ class GameButton(Button):
         super(GameButton, self).on_release()
         self.isShip = not self.isShip
         self.updateColor()
-        self.sendMessage(self.coordinate)
+        self.sendMessage(AttackMessage(x=self.coordinate['x'], y=self.coordinate['y']))
 
     def setWasHit(self, value=True):
         self.wasHit = value

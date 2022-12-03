@@ -53,8 +53,9 @@ class Battleships(GridLayout):
         # wysyła wiadomość
         if not self.isGameStarted:
             return
-        print(message)
-        self.onMessage(message)
+        # print(message)
+        # self.onMessage(message)
+        self.client.sendMessage(message)
         
     def isShip(self, x: int, y: int):
         # czy jest statkiem
