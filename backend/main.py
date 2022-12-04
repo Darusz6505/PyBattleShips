@@ -1,8 +1,9 @@
-import math
+import json
 import time
 import asyncio
 
 import websockets
+from message import BaseMessage, GameIdNotAllowedMessage
 
 from game import Game
 
@@ -13,7 +14,7 @@ class Server:
     games = {} # Id, obiekt gry
     websocketToGame = {} # websocket, ID Gry
 
-    gameKeys = ['A', 'B', 'C']
+    # gameKeys = ['A', 'B', 'C']
 
     # kasowanie zakończonych gier z dziennika
     async def clearOldGames(self):
@@ -39,7 +40,19 @@ class Server:
         try:
             async for message in websocket:
                 if websocket not in self.websocketToGame:
-                    self.websocketToGame[websocket] = self.gameKeys[math.floor(len(self.websocketToGame) / 2)]
+                    # self.websocketToGame[websocket] = self.gameKeys[math.floor(len(self.websocketToGame) / 2)]
+                    m = BaseMessage(data=json.loads(message))
+                    try:
+                        if m.type == BaseMessage.PLAYER_CONNECTED:
+                            self.websocketToGame[websocket] = m.gameId
+                    except AttributeError:
+                        await websocket.send("I do not know what you wont")
+
+                    if self.websocketToGame[websocket] == "":
+                        await websocket.send(GameIdNotAllowedMessage().toJSON())
+                        self.websocketToGame.pop(websocket)
+                        continue
+
                     if self.websocketToGame[websocket] in self.games:
                         print("Adding player to game", self.websocketToGame[websocket])
                         self.games[self.websocketToGame[websocket]].add_player(websocket)

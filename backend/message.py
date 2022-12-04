@@ -10,12 +10,13 @@ class BaseMessage:
     HIT = "HIT"
     MISS = "MISS"
     SANK = "SANK"
+    GAME_ID_NOT_ALLOWED = "GAME_ID_NOT_ALLOWED"
 
     def __init__(self, data=None):
         if data is not None:
             self.__dict__ = data
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls):
         BaseMessage.__init__(cls)
 
     def toJSON(self):
@@ -27,8 +28,9 @@ class PlayerDisconnectedMesage(BaseMessage):
         self.type = self.PLAYER_DISCONNECTED
 
 class PlayerConnectedMesage(BaseMessage):
-    def __init__(self):
+    def __init__(self, gameId):
         self.type = self.PLAYER_CONNECTED
+        self.gameId = gameId
 
 class AttackMessage(BaseMessage):
     def __init__(self, x=0, y=0):
@@ -47,3 +49,7 @@ class MissMessage(BaseMessage):
 class SankMessage(BaseMessage):
     def __init__(self):
         self.type = self.SANK
+
+class GameIdNotAllowedMessage(BaseMessage):
+    def __init__(self):
+        self.type = self.GAME_ID_NOT_ALLOWED

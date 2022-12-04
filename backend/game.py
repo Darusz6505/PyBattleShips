@@ -20,12 +20,13 @@ class Game:
 
     async def handle(self, websocket, message):
         self.lastActivity = time.time()
+        message = BaseMessage(data=json.loads(message))
+
+        if message.type == BaseMessage.PLAYER_DISCONNECTED:
+            await self.sendBoth(message.toJSON())
+
         if len(self.players) == 2:
-            message = BaseMessage(data=json.loads(message))
-            if message.type == BaseMessage.PLAYER_DISCONNECTED:
-                await self.sendBoth(message.toJSON())
-            else:
-                await self.sendToOther(websocket, message.toJSON())
+            await self.sendToOther(websocket, message.toJSON())
 
 
     async def timeout(self):

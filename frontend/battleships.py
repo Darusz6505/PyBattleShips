@@ -38,12 +38,12 @@ class Battleships(GridLayout):
     def StartButtonClick(self):
         #start gry, po zdefiniowaniu statków
         self.ids['player'].disabled = True
+        self.ids['opponent'].disabled = False
         self.ids['StartButtonId'].disabled = True
         self.ids['gameId'].disabled = True
-        self.ids['opponent'].disabled = False
         print('Start Button Clik was click :)')
         self.isGameStarted = True
-        self.sendMessage(PlayerConnectedMesage())
+        self.sendMessage(PlayerConnectedMesage(self.ids['gameId'].text))
 
         # C:\Users\lunavis\Desktop\PyBattleShips2\battleships.py
         
@@ -67,6 +67,13 @@ class Battleships(GridLayout):
             self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].hit()
         elif message.type == BaseMessage.MISS:
             self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].miss()
+        elif message.type == BaseMessage.GAME_ID_NOT_ALLOWED:
+            self.ids['player'].disabled = False
+            self.ids['opponent'].disabled = True
+            self.ids['StartButtonId'].disabled = False
+            self.ids['gameId'].disabled = False
+            self.isGameStarted = False
+
 
     
     def sendMessage(self, message):
