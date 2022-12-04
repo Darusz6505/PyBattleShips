@@ -14,8 +14,6 @@ class Server:
     games = {} # Id, obiekt gry
     websocketToGame = {} # websocket, ID Gry
 
-    # gameKeys = ['A', 'B', 'C']
-
     # kasowanie zakończonych gier z dziennika
     async def clearOldGames(self):
         while True:
@@ -40,7 +38,6 @@ class Server:
         try:
             async for message in websocket:
                 if websocket not in self.websocketToGame:
-                    # self.websocketToGame[websocket] = self.gameKeys[math.floor(len(self.websocketToGame) / 2)]
                     m = BaseMessage(data=json.loads(message))
                     try:
                         if m.type == BaseMessage.PLAYER_CONNECTED:

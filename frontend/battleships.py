@@ -1,5 +1,4 @@
 import asyncio
-from kivy import Config
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from client import Client
@@ -7,8 +6,7 @@ from client import Client
 import plane
 from gamebutton import GameButton
 
-from message import BaseMessage, PlayerConnectedMesage, SankMessage, HitMessage, MissMessage
-
+from message import BaseMessage, PlayerConnectedMesage, SankMessage, HitMessage, MissMessage, YouWonMessage
 
 
 class Battleships(GridLayout):
@@ -21,6 +19,7 @@ class Battleships(GridLayout):
         self.ids['opponent'].disabled = True
         self.lastX = 0
         self.lastY = 0
+        self.shipNodes = 0
 
         for c1 in self.children:
             for c2 in c1.children:
@@ -29,6 +28,12 @@ class Battleships(GridLayout):
                         if isinstance(c4, GameButton):
                             c4.sendMessage = self.sendMessage
                             c4.saveLastHitPosition = self.saveLastHitPosition
+
+    def updateShipNodes(self):
+        for i in range(1, 11):
+            for j in range(1, 11):
+                if self.isShip(j, j):
+                    self.shipNodes += 1
 
     def saveLastHitPosition(self, x, y):
         self.lastX = x
@@ -42,6 +47,7 @@ class Battleships(GridLayout):
         self.ids['gameId'].disabled = True
         print('Start Button Clik was click :)')
         self.isGameStarted = True
+        self.updateShipNodes()
         self.sendMessage(PlayerConnectedMesage(self.ids['gameId'].text))
 
         # C:\Users\lunavis\Desktop\PyBattleShips2\battleships.py
@@ -55,8 +61,13 @@ class Battleships(GridLayout):
 
             if self.isShip(x, y) and self.isSunken(x, y, {}):
                 self.sank(x, y, {}, 'player')
+                self.shipNodes -= 1
                 self.sendMessage(SankMessage())
+                if self.shipNodes == 0:
+                    self.sendMessage(YouWonMessage())
+                    print("You Lost")
             elif self.isShip(x, y):
+                self.shipNodes -= 1
                 self.sendMessage(HitMessage())
             else:
                 self.sendMessage(MissMessage())
@@ -73,6 +84,8 @@ class Battleships(GridLayout):
             self.gameIdNotAllowed()
         elif message.type == BaseMessage.PLAYER_CONNECTED:
             self.myTurn()
+        elif message.type == BaseMessage.YOU_WON:
+            print("You Won!")
             
 
     def gameIdNotAllowed(self):

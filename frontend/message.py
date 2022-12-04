@@ -11,6 +11,7 @@ class BaseMessage:
     MISS = "MISS"
     SANK = "SANK"
     GAME_ID_NOT_ALLOWED = "GAME_ID_NOT_ALLOWED"
+    YOU_WON = "YOU_WON"
 
     def __init__(self, data=None):
         if data is not None:
@@ -54,3 +55,7 @@ class SankMessage(BaseMessage):
 class GameIdNotAllowedMessage(BaseMessage):
     def __init__(self):
         self.type = self.GAME_ID_NOT_ALLOWED
+
+class YouWonMessage(BaseMessage):
+    def __init__(self):
+        self.type = self.YOU_WON
