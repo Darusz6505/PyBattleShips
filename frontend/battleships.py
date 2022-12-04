@@ -1,7 +1,10 @@
 import asyncio
+from tkinter.tix import PopupMenu
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.popup import Popup
 from client import Client
+from genericpopup import GenericPopup
 
 import plane
 from gamebutton import GameButton
@@ -20,6 +23,7 @@ class Battleships(GridLayout):
         self.lastX = 0
         self.lastY = 0
         self.shipNodes = 0
+        self.popup = None
 
         for c1 in self.children:
             for c2 in c1.children:
@@ -28,6 +32,29 @@ class Battleships(GridLayout):
                         if isinstance(c4, GameButton):
                             c4.sendMessage = self.sendMessage
                             c4.saveLastHitPosition = self.saveLastHitPosition
+
+
+    def resetGame(self):
+        print("Reseting game")
+        self.dismissPopup()
+
+    def dismissPopup(self):
+        self.popup.dismiss()
+
+    def createPopup(self, title, messageText, approveText):
+        if self.popup is not None:
+            self.dismissPopup()
+
+        self.popup = Popup(title=title,
+                            size_hint=(0.6, 0.6 ),
+                            content=GenericPopup(
+                                approveText=approveText,
+                                messageText=messageText,
+                                concel=self.dismissPopup,
+                                approve=self.resetGame
+                            ))
+        self.popup.open()
+
 
     def updateShipNodes(self):
         for i in range(1, 11):
@@ -66,6 +93,7 @@ class Battleships(GridLayout):
                 if self.shipNodes == 0:
                     self.sendMessage(YouWonMessage())
                     print("You Lost")
+                    self.createPopup("Game Lost", "You Lost :(", "Play again")
             elif self.isShip(x, y):
                 self.shipNodes -= 1
                 self.sendMessage(HitMessage())
@@ -86,6 +114,9 @@ class Battleships(GridLayout):
             self.myTurn()
         elif message.type == BaseMessage.YOU_WON:
             print("You Won!")
+            self.createPopup("Game Won", "You Won ):", "Play again")
+        elif message.type == BaseMessage.PLAYER_DISCONNECTED:
+            self.createPopup("Disconnected", "Your partner has disconnected", "Play again")
             
 
     def gameIdNotAllowed(self):
@@ -93,6 +124,7 @@ class Battleships(GridLayout):
         self.ids['StartButtonId'].disabled = False
         self.ids['gameId'].disabled = False
         self.isGameStarted = False
+        self.createPopup("GameID missing!", "You need to provide not empty GameID", "Play again")
 
 
     def myTurn(self):
