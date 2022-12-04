@@ -38,7 +38,6 @@ class Battleships(GridLayout):
     def StartButtonClick(self):
         #start gry, po zdefiniowaniu statków
         self.ids['player'].disabled = True
-        self.ids['opponent'].disabled = False
         self.ids['StartButtonId'].disabled = True
         self.ids['gameId'].disabled = True
         print('Start Button Clik was click :)')
@@ -61,18 +60,33 @@ class Battleships(GridLayout):
                 self.sendMessage(HitMessage())
             else:
                 self.sendMessage(MissMessage())
+                self.myTurn()
         elif message.type == BaseMessage.SANK:
             self.sank(self.lastX, self.lastY, {}, 'opponent')
+            self.myTurn()
         elif message.type == BaseMessage.HIT:
             self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].hit()
+            self.myTurn()
         elif message.type == BaseMessage.MISS:
             self.ids['opponent'].ids[str(self.lastY)].ids[str(self.lastX)].miss()
         elif message.type == BaseMessage.GAME_ID_NOT_ALLOWED:
-            self.ids['player'].disabled = False
-            self.ids['opponent'].disabled = True
-            self.ids['StartButtonId'].disabled = False
-            self.ids['gameId'].disabled = False
-            self.isGameStarted = False
+            self.gameIdNotAllowed()
+        elif message.type == BaseMessage.PLAYER_CONNECTED:
+            self.myTurn()
+            
+
+    def gameIdNotAllowed(self):
+        self.ids['player'].disabled = False
+        self.ids['StartButtonId'].disabled = False
+        self.ids['gameId'].disabled = False
+        self.isGameStarted = False
+
+
+    def myTurn(self):
+        self.ids['opponent'].disabled = False
+
+    def opponentTurn(self):
+        self.ids['opponent'].disabled = True
 
 
     
@@ -82,7 +96,9 @@ class Battleships(GridLayout):
             return
         # print(message)
         # self.onMessage(message)
+        self.opponentTurn()
         self.client.sendMessage(message)
+
         
     def isShip(self, x: int, y: int):
         # czy jest statkiem
