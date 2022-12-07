@@ -37,12 +37,17 @@ class GameButton(Button):
         self.updateColor()
 
     def updateColor(self):
-        if self.isShip and self.wasHit:
-            self.background_color = (0.9, 0, 0)
+        if self.isSunken:
+            self.background_color ="#a10514"
+        elif self.isShip and self.wasHit:
+            # self.background_color = (0.9, 0, 0)
+            self.background_color = "#e0b01d"
         elif self.isShip and not self.wasHit:
-            self.background_color = (0, 0.9, 0)
+            # self.background_color = (0, 0.9, 0)
+            self.background_color = "#28a745"
         elif not self.isShip and self.wasHit:
-            self.background_color = (0, 0, 0.9)
+            # self.background_color = (0, 0, 0.9)
+            self.background_color = "#007bff"
         elif not self.isShip and not self.wasHit:
-            self.background_color = (0.9, 0.9, 0.9)
+            self.background_color = (0.3, 0.3, 0.3)
 

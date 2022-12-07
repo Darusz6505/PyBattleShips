@@ -1,5 +1,5 @@
 import asyncio
-from tkinter.tix import PopupMenu
+# from tkinter.tix import PopupMenu
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
@@ -29,6 +29,7 @@ class Battleships(GridLayout):
     def resetGamefield(self, field):
         field.isShip = False
         field.wasHit = False
+        field.isSunken = False
         field.updateColor()
     
     
@@ -86,14 +87,18 @@ class Battleships(GridLayout):
 
 
     def StartButtonClick(self):
-        #start gry, po zdefiniowaniu statków
-        self.ids['player'].disabled = True
-        self.ids['StartButtonId'].disabled = True
-        self.ids['gameId'].disabled = True
-        print('Start Button Clik was click :)')
-        self.isGameStarted = True
         self.updateShipNodes()
-        self.sendMessage(PlayerConnectedMesage(self.ids['gameId'].text))
+        if self.shipNodes > 0:
+            #start gry, po zdefiniowaniu statków
+            self.ids['player'].disabled = True
+            self.ids['StartButtonId'].disabled = True
+            self.ids['gameId'].disabled = True
+            print('Start Button Clik was click :)')
+            self.isGameStarted = True
+            self.sendMessage(PlayerConnectedMesage(self.ids['gameId'].text))
+        else:
+            self.createPopup("No Ships !", "Create ships, after game started.", "Play again")
+
 
         # C:\Users\lunavis\Desktop\PyBattleShips2\battleships.py
         
