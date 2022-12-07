@@ -24,18 +24,36 @@ class Battleships(GridLayout):
         self.lastY = 0
         self.shipNodes = 0
         self.popup = None
+        self.forEachGameField(self.registerGameFieldCallbacks)
 
+    def resetGamefield(self, field):
+        field.isShip = False
+        field.wasHit = False
+        field.updateColor()
+    
+    
+    def registerGameFieldCallbacks(self, field):
+        field.sendMessage = self.sendMessage
+        field.saveLastHitPosition = self.saveLastHitPosition
+
+    def forEachGameField(self, func):
         for c1 in self.children:
             for c2 in c1.children:
                 for c3 in c2.children:
                     for c4 in c3.children:
                         if isinstance(c4, GameButton):
-                            c4.sendMessage = self.sendMessage
-                            c4.saveLastHitPosition = self.saveLastHitPosition
+                            func(c4)
 
-
+    def resetUIFields(self):
+        self.ids['player'].disabled = False
+        self.ids['opponent'].disabled = True
+        self.ids['StartButtonId'].disabled = False
+        self.ids['gameId'].disabled = False
+        self.isGameStarted = False
+    
     def resetGame(self):
-        print("Reseting game")
+        self.resetUIFields()
+        self.forEachGameField(self.resetGamefield)
         self.dismissPopup()
 
     def dismissPopup(self):
@@ -59,7 +77,7 @@ class Battleships(GridLayout):
     def updateShipNodes(self):
         for i in range(1, 11):
             for j in range(1, 11):
-                if self.isShip(j, j):
+                if self.isShip(i, j):
                     self.shipNodes += 1
 
     def saveLastHitPosition(self, x, y):
@@ -111,7 +129,8 @@ class Battleships(GridLayout):
         elif message.type == BaseMessage.GAME_ID_NOT_ALLOWED:
             self.gameIdNotAllowed()
         elif message.type == BaseMessage.PLAYER_CONNECTED:
-            self.myTurn()
+            if self.isGameStarted:
+                self.myTurn()
         elif message.type == BaseMessage.YOU_WON:
             print("You Won!")
             self.createPopup("Game Won", "You Won ):", "Play again")
@@ -120,10 +139,7 @@ class Battleships(GridLayout):
             
 
     def gameIdNotAllowed(self):
-        self.ids['player'].disabled = False
-        self.ids['StartButtonId'].disabled = False
-        self.ids['gameId'].disabled = False
-        self.isGameStarted = False
+        self.resetUIFields()
         self.createPopup("GameID missing!", "You need to provide not empty GameID", "Play again")
 
 
