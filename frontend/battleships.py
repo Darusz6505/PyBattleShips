@@ -55,7 +55,9 @@ class Battleships(GridLayout):
     def resetGame(self):
         self.resetUIFields()
         self.forEachGameField(self.resetGamefield)
-        self.dismissPopup()
+        self.shipNodes = 0
+        if self.popup is not None:
+            self.dismissPopup()
 
     def dismissPopup(self):
         self.popup.dismiss()
