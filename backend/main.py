@@ -80,7 +80,9 @@ s = Server()
 
 asyncio.get_event_loop().run_until_complete(
 
-    websockets.serve(s.echo, 'localhost', 8765)
+    # websockets.serve(s.echo, 'localhost', 8765)
+    # dla 0.0.0.0 przypina się do wszystkich dostępnych interfejsów sieciowych
+    websockets.serve(s.echo, '0.0.0.0', 8765)
 )
 
 asyncio.get_event_loop().run_until_complete(
